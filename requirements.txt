@@ -1,0 +1,18 @@
+langgraph
+langchain
+langsmith
+langchain-google-genai
+langchain-groq
+langchain-openai
+langchain-ollama
+pydantic
+pdfplumber
+openpyxl
+python-bidi
+python-dotenv
+truststore
+streamlit
+# used only to generate the sample data
+reportlab
+pillow
+pytest

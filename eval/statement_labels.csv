@@ -1,0 +1,41 @@
+charge_id,expected_status,matched_ref,case
+C01,matched_manual,M06,"handwritten, exact amount"
+C02,unrecognized,,forgotten subscription
+C03,matched_receipt,R03,English vs Hebrew name
+C04,unrecognized,,forgotten subscription
+C05,matched_receipt,R01,installment 1 of 6
+C06,unrecognized,,foreign online charge
+C07,matched_manual,M01,"handwritten, 2.7% off, no merchant"
+C08,matched_manual,M02,"handwritten, rounded amount"
+C09,matched_manual,M03,handwritten
+C10,matched_manual,M04,"handwritten fuel, not the receipt one"
+C11,unrecognized,,unknown online charge
+C12,matched_receipt,R04,"Hebrew name on statement, date +1"
+C13,unrecognized,,"small charge, no record"
+C14,matched_receipt,R05,English vs Hebrew name
+C15,matched_manual,M05,"handwritten, 6% off"
+C16,matched_receipt,R06,"longer name, date +1"
+C17,matched_receipt,R02,last installment of a September purchase
+C18,unrecognized,,foreign online charge
+C19,matched_receipt,R08,fuel with receipt
+C20,matched_manual,M07,handwritten
+C21,amount_mismatch,R09,charged 25 more than receipt
+C22,matched_receipt,R10,English vs Hebrew name
+C23,unrecognized,,"handwritten 'restaurant 200' is 30% off, too far"
+C24,matched_manual,M10,"handwritten, 4% off"
+C25,matched_manual,M11,"handwritten, payment app"
+C26,unrecognized,,no record
+C27,amount_mismatch,R13,charged 10 more than receipt
+C28,matched_receipt,R11,"date +3, edge of regular window"
+C29,unrecognized,,"monthly bill, no record"
+C30,matched_receipt,R12,transliterated name
+C31,matched_receipt,R15,first of a double charge
+C32,unrecognized,,suspicious foreign charge
+C33,unrecognized,,"double charge, receipt already used"
+C34,matched_manual,M14,"handwritten, 2% off"
+C35,matched_manual,M12,second 'super' line on page 2
+C36,matched_manual,M13,"handwritten, 3% off"
+C37,matched_manual,M15,handwritten
+C38,unrecognized,,small subscription
+C39,matched_receipt,R14,date +5: needs loose matching
+C40,matched_manual,M16,"handwritten, 6.7% off"
