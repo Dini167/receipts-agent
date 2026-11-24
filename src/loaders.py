@@ -163,6 +163,70 @@ def load_statement_pdf(path) -> tuple[list[dict], float | None]:
     return rows, stated_total
 
 
+def file_kind(data: bytes) -> str | None:
+    """What a file really is, by its first bytes, not by its name.
+
+    "pdf", "xlsx", "docx", "png", "jpg" or "text"; None when it is none of these.
+    """
+    head = data[:2048]
+    if head.startswith(b"%PDF"):
+        return "pdf"
+    if head.startswith(b"PK"):                       # .xlsx and .docx are zip files inside
+        import io
+        import zipfile
+        try:
+            names = zipfile.ZipFile(io.BytesIO(data)).namelist()
+        except zipfile.BadZipFile:
+            return None
+        if "word/document.xml" in names:
+            return "docx"
+        return "xlsx" if "xl/workbook.xml" in names else None
+    if head.startswith(b"\x89PNG"):
+        return "png"
+    if head.startswith(b"\xff\xd8"):
+        return "jpg"
+    try:
+        head.decode("utf-8")
+    except UnicodeDecodeError as e:
+        if e.start < len(head) - 4:                  # not just a letter cut at the end
+            return None
+    return "text" if b"\x00" not in head else None
+
+
+def docx_text(path) -> str:
+    """The text of a Word file, one paragraph per line (Word files are zip + XML inside)."""
+    import zipfile
+    from xml.etree import ElementTree
+    w = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+    try:
+        xml = zipfile.ZipFile(path).read("word/document.xml")
+    except (zipfile.BadZipFile, KeyError) as e:
+        raise ValueError("לא הצלחתי לפתוח את קובץ ה-Word.") from e
+    lines = []
+    for p in ElementTree.fromstring(xml).iter(w + "p"):
+        text = "".join(t.text or "" for t in p.iter(w + "t")).strip()
+        if text:
+            lines.append(text)
+    return "\n".join(lines)
+
+
+def pdf_text(path) -> str:
+    """All the text in a PDF (empty for a scanned PDF)."""
+    import pdfplumber
+    with pdfplumber.open(path) as pdf:
+        return "\n".join(page.extract_text() or "" for page in pdf.pages[:5])
+
+
+# words that appear on credit card statements (Hebrew and English)
+STATEMENT_WORDS = ("חיוב", "אשראי", "כרטיס", "עסקה", "עסקאות", "בית עסק", "statement", "card",
+                   "charge", "merchant", "total")
+
+
+def looks_like_statement(text: str) -> bool:
+    low = _fix_hebrew(text).lower() + text.lower()
+    return sum(w in low for w in STATEMENT_WORDS) >= 2
+
+
 def load_statement(path) -> tuple[list[dict], float | None]:
     """Pick the right loader by file type."""
     loaders = {

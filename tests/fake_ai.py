@@ -35,6 +35,9 @@ class FakeAI:
     def read_handwritten(self, path):
         return [dict(l) for l in self.handwritten]
 
+    def read_purchase_list(self, text):
+        return [dict(l) for l in self.handwritten]
+
     def read_scanned_statement(self, image_paths):
         return [], None
 

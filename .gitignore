@@ -5,3 +5,4 @@ __pycache__/
 # real personal data never goes to GitHub
 data/private/
 receipts.db
+.streamlit/secrets.toml

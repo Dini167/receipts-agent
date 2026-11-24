@@ -1,0 +1,146 @@
+[
+  {
+    "ref": "M01",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "סופר",
+    "estimated_amount": 450,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M02",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "נעליים לילדים",
+    "estimated_amount": 200,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M03",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "ירקות",
+    "estimated_amount": 120,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M04",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "דלק",
+    "estimated_amount": 250,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M05",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "מתנה ליום הולדת",
+    "estimated_amount": 150,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M06",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "חוג לילדים",
+    "estimated_amount": 280,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M07",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "מספרה",
+    "estimated_amount": 90,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M08",
+    "month": "2026-11",
+    "source_page": 1,
+    "description": "מסעדה",
+    "estimated_amount": 200,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M09",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "חוג לילדים",
+    "estimated_amount": 280,
+    "merchant": null,
+    "duplicate_of": "M06"
+  },
+  {
+    "ref": "M10",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "תרופות",
+    "estimated_amount": 60,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M11",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "חשמלאי",
+    "estimated_amount": 400,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M12",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "סופר",
+    "estimated_amount": 380,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M13",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "פיצה",
+    "estimated_amount": 95,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M14",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "מתנה לחתונה",
+    "estimated_amount": 500,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M15",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "בגדים",
+    "estimated_amount": 350,
+    "merchant": null,
+    "duplicate_of": null
+  },
+  {
+    "ref": "M16",
+    "month": "2026-11",
+    "source_page": 2,
+    "description": "טיפול לרכב",
+    "estimated_amount": 600,
+    "merchant": null,
+    "duplicate_of": null
+  }
+]

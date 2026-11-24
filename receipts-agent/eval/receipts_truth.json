@@ -1,0 +1,137 @@
+[
+  {
+    "ref": "R01",
+    "merchant": "מחסני חשמל",
+    "purchase_date": "2026-11-03",
+    "total_amount": 2490.0,
+    "product": "מקרר",
+    "installments": 6,
+    "warranty_until": "2029-11-03"
+  },
+  {
+    "ref": "R02",
+    "merchant": "באג מולטיסיסטם",
+    "purchase_date": "2026-09-14",
+    "total_amount": 360.0,
+    "product": "אוזניות",
+    "installments": 3,
+    "warranty_until": "2027-09-14"
+  },
+  {
+    "ref": "R03",
+    "merchant": "שופרסל דיל",
+    "purchase_date": "2026-11-02",
+    "total_amount": 612.4,
+    "product": "מצרכים",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R04",
+    "merchant": "רמי לוי",
+    "purchase_date": "2026-11-09",
+    "total_amount": 845.9,
+    "product": "מצרכים",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R05",
+    "merchant": "סופר-פארם",
+    "purchase_date": "2026-11-11",
+    "total_amount": 189.7,
+    "product": "מוצרי טיפוח",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R06",
+    "merchant": "ACE",
+    "purchase_date": "2026-11-12",
+    "total_amount": 349.0,
+    "product": "מקדחה",
+    "installments": 1,
+    "warranty_until": "2028-11-12"
+  },
+  {
+    "ref": "R07",
+    "merchant": "חשמל העיר",
+    "purchase_date": "2025-12-15",
+    "total_amount": 899.0,
+    "product": "מיקסר",
+    "installments": 1,
+    "warranty_until": "2026-12-15"
+  },
+  {
+    "ref": "R08",
+    "merchant": "פז",
+    "purchase_date": "2026-11-15",
+    "total_amount": 300.0,
+    "product": "דלק",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R09",
+    "merchant": "איקאה",
+    "purchase_date": "2026-11-17",
+    "total_amount": 520.0,
+    "product": "מדף",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R10",
+    "merchant": "קפה גרג",
+    "purchase_date": "2026-11-18",
+    "total_amount": 64.0,
+    "product": "ארוחת בוקר",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R11",
+    "merchant": "טיב טעם",
+    "purchase_date": "2026-11-20",
+    "total_amount": 233.5,
+    "product": "מצרכים",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R12",
+    "merchant": "צומת ספרים",
+    "purchase_date": "2026-11-21",
+    "total_amount": 158.0,
+    "product": "ספרים",
+    "installments": 1,
+    "warranty_until": null
+  },
+  {
+    "ref": "R13",
+    "merchant": "מחסני חשמל",
+    "purchase_date": "2026-11-22",
+    "total_amount": 449.0,
+    "product": "מיקרוגל",
+    "installments": 1,
+    "warranty_until": "2027-11-22"
+  },
+  {
+    "ref": "R14",
+    "merchant": "הום סנטר",
+    "purchase_date": "2026-11-24",
+    "total_amount": 129.9,
+    "product": "מנורה",
+    "installments": 1,
+    "warranty_until": "2027-11-24"
+  },
+  {
+    "ref": "R15",
+    "merchant": "גוד פארם",
+    "purchase_date": "2026-11-25",
+    "total_amount": 76.3,
+    "product": "תרופות",
+    "installments": 1,
+    "warranty_until": null
+  }
+]

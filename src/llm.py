@@ -22,16 +22,29 @@ from langchain_core.rate_limiters import InMemoryRateLimiter  # noqa: E402
 _RPS = float(os.getenv("REQUESTS_PER_SECOND", "0") or 0)
 RATE_LIMITER = (InMemoryRateLimiter(requests_per_second=_RPS, check_every_n_seconds=0.1)
                 if _RPS > 0 else None)
-TIMEOUT = 25  # seconds: a slow or stuck model is dropped and the backup takes over
+# seconds: a slow or stuck model is dropped and the backup takes over.
+# Text answers are short, so a model that is silent for 12 seconds is stuck; reading an image takes longer.
+TIMEOUT_TEXT = 12
+TIMEOUT_IMAGE = 25
 
 
-def _gemini(name: str):
+def _gemini(name: str, vision: bool):
     if not os.getenv("GOOGLE_API_KEY") or not name:
         return None
     from langchain_google_genai import ChatGoogleGenerativeAI
     # max_retries=0 + timeout: when a free model is busy, move on to the backup at once
-    return ChatGoogleGenerativeAI(model=name, temperature=0, max_retries=0, timeout=TIMEOUT,
+    return ChatGoogleGenerativeAI(model=name, temperature=0, max_retries=0, timeout=TIMEOUT_IMAGE if vision else TIMEOUT_TEXT,
                                   rate_limiter=RATE_LIMITER)
+
+
+def _anthropic(vision: bool):
+    name = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5")
+    if not os.getenv("ANTHROPIC_API_KEY") or not name:
+        return None
+    from langchain_anthropic import ChatAnthropic
+    # Claude models read images too, so the same model serves text and image steps
+    return ChatAnthropic(model=name, temperature=0, max_retries=0, timeout=TIMEOUT_IMAGE if vision else TIMEOUT_TEXT,
+                         rate_limiter=RATE_LIMITER)
 
 
 def _groq(vision: bool):
@@ -41,7 +54,7 @@ def _groq(vision: bool):
     name = os.getenv("GROQ_VISION_MODEL") if vision else os.getenv("GROQ_MODEL")
     if not name:
         return None
-    return ChatGroq(model=name, temperature=0, max_retries=0, timeout=TIMEOUT, rate_limiter=RATE_LIMITER)
+    return ChatGroq(model=name, temperature=0, max_retries=0, timeout=TIMEOUT_IMAGE if vision else TIMEOUT_TEXT, rate_limiter=RATE_LIMITER)
 
 
 def _openrouter(vision: bool):
@@ -51,7 +64,7 @@ def _openrouter(vision: bool):
     name = os.getenv("OPENROUTER_VISION_MODEL") if vision else os.getenv("OPENROUTER_MODEL")
     if not name:
         return None
-    return ChatOpenAI(model=name, temperature=0, max_retries=0, timeout=TIMEOUT, api_key=os.getenv("OPENROUTER_API_KEY"),
+    return ChatOpenAI(model=name, temperature=0, max_retries=0, timeout=TIMEOUT_IMAGE if vision else TIMEOUT_TEXT, api_key=os.getenv("OPENROUTER_API_KEY"),
                       base_url="https://openrouter.ai/api/v1", rate_limiter=RATE_LIMITER)
 
 
@@ -66,10 +79,12 @@ def _ollama(vision: bool):
 def get_models(vision: bool = False) -> list:
     """All configured models, in order. Image steps get only image-capable models."""
     models = [
-        # Fastest first. Each Gemini model has its own free daily quota, so when one runs
+        # Paid Anthropic key (if set) goes first: it is the most reliable.
+        _anthropic(vision),
+        # Then the free ones, fastest first. Each Gemini model has its own free daily quota, so when one runs
         # out the next one (same key) takes over. GEMINI_BACKUP_MODEL may list several, comma-separated.
-        _gemini(os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")),
-        *[_gemini(n.strip()) for n in os.getenv(
+        _gemini(os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite"), vision),
+        *[_gemini(n.strip(), vision) for n in os.getenv(
             "GEMINI_BACKUP_MODEL",
             "gemini-flash-lite-latest,gemini-3.6-flash,gemma-4-26b-a4b-it").split(",")],
         _groq(vision), _openrouter(vision), _ollama(vision),

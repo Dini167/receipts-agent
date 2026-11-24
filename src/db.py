@@ -40,6 +40,11 @@ CREATE TABLE IF NOT EXISTS checked_charges (
     reason       TEXT,
     PRIMARY KEY (month, charge_id)
 );
+
+CREATE TABLE IF NOT EXISTS settings (
+    key   TEXT PRIMARY KEY,                    -- for example "monthly_budget"
+    value TEXT NOT NULL
+);
 """
 
 
@@ -160,3 +165,17 @@ def update_receipt(conn, receipt_id: int, merchant: str, purchase_date: str, tot
         "warranty_until = ? WHERE id = ?",
         (merchant, purchase_date, total_amount, product, warranty_until, receipt_id))
     conn.commit()
+
+
+def get_setting(conn, key: str, default: str | None = None) -> str | None:
+    row = conn.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+    return row[0] if row else default
+
+
+def set_setting(conn, key: str, value: str) -> None:
+    conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, value))
+    conn.commit()
+
+
+def list_all_manual_entries(conn) -> list[dict]:
+    return [dict(r) for r in conn.execute("SELECT * FROM manual_entries ORDER BY month, id")]

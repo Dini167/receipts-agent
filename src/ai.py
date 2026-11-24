@@ -94,6 +94,8 @@ Charge: {merchant} {amount}
 Handwritten line: {description} {estimated}"""
 
 
+BATCH_SIZE = 30            # pairs per request (several requests run at the same time)
+
 BATCH_NOTE = """
 Several pairs are listed below, numbered. Judge each pair on its own, using the rules above.
 Return one answer for every pair, with its number.
@@ -132,7 +134,8 @@ class ModelAI:
         from .llm import get_structured_llm
         p = Path(path)
         system = SystemMessage(content=DATA_NOT_INSTRUCTIONS +
-                               " Extract the receipt fields. Leave a field empty if it is not printed.")
+                               " Extract the receipt fields. Leave a field empty if it is not printed. "
+                               "If this is not a store receipt or invoice at all, leave every field empty.")
         if p.suffix.lower() == ".txt":
             llm = get_structured_llm(ReceiptFields)
             msg = HumanMessage(content=redact(p.read_text(encoding="utf-8")))
@@ -147,9 +150,20 @@ class ModelAI:
         llm = get_structured_llm(HandwrittenPage, vision=True)
         system = SystemMessage(content=DATA_NOT_INSTRUCTIONS +
                                " Read every line of this handwritten Hebrew shopping list. "
-                               "Each line is: what was bought, and an approximate amount in shekels.")
+                               "Each line is: what was bought, and an approximate amount in shekels. "
+                               "If this is not a handwritten shopping list, return no lines.")
         msg = HumanMessage(content=[{"type": "text", "text": "Handwritten page:"}, _image_part(path)])
         return [l.model_dump() for l in llm.invoke([system, msg]).lines]
+
+    def read_purchase_list(self, text: str) -> list[dict]:
+        """A typed list of purchases (from a Word file): same lines as a handwritten page."""
+        from .llm import get_structured_llm
+        llm = get_structured_llm(HandwrittenPage)
+        system = SystemMessage(content=DATA_NOT_INSTRUCTIONS +
+                               " This is a typed list of purchases in Hebrew. Return one line per purchase: "
+                               "what was bought, the amount in shekels, and the store if written. "
+                               "If this is not a list of purchases, return no lines.")
+        return [l.model_dump() for l in llm.invoke([system, HumanMessage(content=redact(text[:8000]))]).lines]
 
     # --- scanned statements
     def read_scanned_statement(self, image_paths: list[str]) -> tuple[list[dict], float | None]:
@@ -158,7 +172,8 @@ class ModelAI:
         rows, total = [], None
         for path in image_paths:
             msg = HumanMessage(content=[{"type": "text", "text": DATA_NOT_INSTRUCTIONS +
-                                         " Read every charge row and the printed total."},
+                                         " Read every charge row and the printed total. "
+                                         "If this is not a credit card statement, return no rows."},
                                         _image_part(path)])
             out = llm.invoke([msg])
             rows += [r.model_dump() for r in out.rows]
@@ -206,6 +221,18 @@ class ModelAI:
             return None                      # an answer is missing: ask pair by pair
         return [by_number[i + 1] for i in range(len(lines))]
 
+    def _ask_many(self, rules: str, lines: list[str]) -> list[bool | None]:
+        """Many pairs (a month can have 200): split into small groups sent at the same time.
+
+        One huge request is slow and often runs out of time, and then every pair would be
+        asked one by one. Small groups in parallel answer in a few seconds.
+        """
+        from concurrent.futures import ThreadPoolExecutor
+        groups = [lines[i:i + BATCH_SIZE] for i in range(0, len(lines), BATCH_SIZE)]
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            answers = list(pool.map(lambda g: self._ask_batch(rules, g), groups))
+        return [a for group, got in zip(groups, answers) for a in (got or [None] * len(group))]
+
     def prefetch_same(self, pairs: list[tuple[str, str]]) -> None:
         """Fill the cache for all store-name pairs with a single model request."""
         todo = sorted({p for p in pairs if p not in self._same_cache
@@ -214,9 +241,8 @@ class ModelAI:
             return
         head = (MERCHANT_PROMPT_IMPROVED if self.improved else MERCHANT_PROMPT_BASELINE)
         head = head.split("Statement name:")[0].split("A: {a}")[0].strip()
-        got = self._ask_batch(head, [f'"{a}" / "{b}"' for a, b in todo])
-        if got:
-            self._same_cache.update(zip(todo, got))
+        got = self._ask_many(head, [f'"{a}" / "{b}"' for a, b in todo])
+        self._same_cache.update((k, v) for k, v in zip(todo, got) if v is not None)
 
     def prefetch_fits(self, pairs: list[tuple[dict, dict]]) -> None:
         """Same idea for 'does this handwritten line fit this store?'."""
@@ -228,11 +254,10 @@ class ModelAI:
             return
         head = FITS_PROMPT.split("Charge:")[0].strip()
         keys = sorted(todo)
-        got = self._ask_batch(head, [f'Charge: {todo[k][0]["merchant"]} {todo[k][0]["amount"]} | '
+        got = self._ask_many(head, [f'Charge: {todo[k][0]["merchant"]} {todo[k][0]["amount"]} | '
                                      f'Handwritten line: {k[1]} {todo[k][1]["estimated_amount"]}'
                                      for k in keys])
-        if got:
-            self._fits_cache.update(zip(keys, got))
+        self._fits_cache.update((k, v) for k, v in zip(keys, got) if v is not None)
 
     # --- questions
     def write_answer(self, question: str, context: dict) -> str:

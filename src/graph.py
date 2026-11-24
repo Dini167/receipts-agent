@@ -19,12 +19,17 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import interrupt
 
 from . import db, matching
-from .loaders import check_upload, load_statement
+from .loaders import check_upload, docx_text, load_statement, looks_like_statement, pdf_text
 from .state import AgentState
 
 STATEMENT_TYPES = {".pdf", ".csv", ".xlsx"}
 IMAGE_TYPES = {".png", ".jpg", ".jpeg"}
 REQUIRED_RECEIPT_FIELDS = ("merchant", "purchase_date", "total_amount")
+NOT_STATEMENT = ("הקובץ הזה לא נראה כמו פירוט אשראי: לא מצאתי בו חיובים. "
+                 "כדאי להעלות את הקובץ שמורידים מאתר חברת האשראי (PDF, Excel או CSV).")
+NOT_RECEIPT = "זה לא נראה כמו קבלה: לא מצאתי בו שם חנות, תאריך או סכום."
+NOT_HANDWRITTEN = "לא מצאתי בקובץ שורות של קניות (מה נקנה וכמה עלה)."
+MAX_SCANNED_PAGES = 5      # a scanned statement is short; a long file is probably something else
 STATUS_HE = {
     "matched_receipt": "תואמים לקבלה",
     "matched_manual": "תואמים לרשימה בכתב יד",
@@ -33,7 +38,7 @@ STATUS_HE = {
 }
 
 
-def _add_months(d: date, months: int) -> date:
+def add_months(d: date, months: int) -> date:
     y, m = divmod(d.month - 1 + months, 12)
     return d.replace(year=d.year + y, month=m + 1, day=min(d.day, 28))
 
@@ -76,7 +81,10 @@ def build_graph(ai, db_path=db.DEFAULT_DB_PATH, checkpointer=None, today: date |
     # ------------------------------------------------------------- receipt flow
     def extract_receipt(state: AgentState) -> dict:
         """Read the receipt fields with the model."""
-        return {"receipt": ai.extract_receipt(state["file_path"])}
+        receipt = ai.extract_receipt(state["file_path"])
+        if not any(receipt.get(f) for f in REQUIRED_RECEIPT_FIELDS):
+            raise ValueError(NOT_RECEIPT)        # stop at once, instead of asking for every field
+        return {"receipt": receipt}
 
     def missing_fields(state: AgentState) -> list[str]:
         return [f for f in REQUIRED_RECEIPT_FIELDS if not state["receipt"].get(f)]
@@ -92,7 +100,7 @@ def build_graph(ai, db_path=db.DEFAULT_DB_PATH, checkpointer=None, today: date |
         r = state["receipt"]
         until = None
         if r.get("warranty_months"):
-            until = _add_months(date.fromisoformat(r["purchase_date"]),
+            until = add_months(date.fromisoformat(r["purchase_date"]),
                                 r["warranty_months"]).isoformat()
         with conn() as c:
             if db.find_same_receipt(c, r["merchant"], r["purchase_date"], float(r["total_amount"])):
@@ -110,7 +118,12 @@ def build_graph(ai, db_path=db.DEFAULT_DB_PATH, checkpointer=None, today: date |
     def read_handwritten(state: AgentState) -> dict:
         """Read the page with a model that can read images, and look for repeated lines."""
         month = state.get("month") or now().strftime("%Y-%m")
-        lines = ai.read_handwritten(state["file_path"])
+        if state["file_path"].lower().endswith(".docx"):    # a typed list in Word
+            lines = ai.read_purchase_list(docx_text(state["file_path"]))
+        else:
+            lines = ai.read_handwritten(state["file_path"])
+        if not lines:
+            raise ValueError(NOT_HANDWRITTEN)
         with conn() as c:
             existing = db.list_manual_entries(c, month)
         dups = [{"index": i, "existing": e}
@@ -144,14 +157,23 @@ def build_graph(ai, db_path=db.DEFAULT_DB_PATH, checkpointer=None, today: date |
         path = check_upload(state["file_path"])
         charges, total = load_statement(path)
         if not charges and path.suffix.lower() == ".pdf":
+            # a PDF with text but no statement words is some other document: stop at once,
+            # without sending it to the model
+            text = pdf_text(path)
+            if text.strip() and not looks_like_statement(text):
+                raise ValueError(NOT_STATEMENT)
             import pdfplumber
             images = []
             with pdfplumber.open(path) as pdf:
+                if len(pdf.pages) > MAX_SCANNED_PAGES:
+                    raise ValueError(NOT_STATEMENT)
                 for i, page in enumerate(pdf.pages):
                     out = path.with_name(f"{path.stem}_page{i + 1}.png")
                     page.to_image(resolution=150).original.save(out)
                     images.append(str(out))
             charges, total = ai.read_scanned_statement(images)
+        if not charges:
+            raise ValueError(NOT_STATEMENT)
         return {"charges": charges, "stated_total": total, "results": {},
                 "pending": [c["charge_id"] for c in charges], "used_receipts": [],
                 "retry_count": 0}

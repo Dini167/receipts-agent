@@ -1,5 +1,9 @@
 [server]
 maxUploadSize = 10
+# do not watch the project files for changes: on Windows this can slow the site down.
+# After changing the code, stop with Ctrl+C and run again.
+fileWatcherType = "none"
+runOnSave = false
 
 [theme]
 base = "light"

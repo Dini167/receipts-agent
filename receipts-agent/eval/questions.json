@@ -1,0 +1,14 @@
+[
+  {"question": "כמה הוצאנו בנובמבר לפי הקבלות?", "numbers": [6417.7], "words": [], "forbidden": [], "case": "sum of many receipts"},
+  {"question": "כמה הוצאנו בסך הכל במחסני חשמל?", "numbers": [2939], "words": [], "forbidden": [], "case": "sum by store"},
+  {"question": "כמה שילמנו יחד בשופרסל, ברמי לוי ובטיב טעם?", "numbers": [1691.8], "words": [], "forbidden": [], "case": "sum of three stores"},
+  {"question": "כמה נגבה בכרטיס האשראי בנובמבר?", "numbers": [10127.7], "words": [], "forbidden": [], "case": "sum of 40 charges"},
+  {"question": "על מה האחריות נגמרת בחודשיים הקרובים?", "numbers": [], "words": ["מיקסר"], "forbidden": ["מקרר", "מקדחה", "אוזניות"], "case": "date window"},
+  {"question": "כמה ימים נשארו לאחריות על המיקסר?", "numbers": [23], "words": [], "forbidden": [], "case": "days left"},
+  {"question": "לאילו מוצרים נשארו יותר משנתיים של אחריות?", "numbers": [], "words": ["מקרר"], "forbidden": ["מקדחה", "מיקסר", "אוזניות"], "case": "long date window"},
+  {"question": "מה המוצר הכי יקר שקנינו?", "numbers": [], "words": ["מקרר"], "forbidden": [], "case": "max"},
+  {"question": "כמה חיובים לא מוכרים יש בפירוט?", "numbers": [12], "words": [], "forbidden": [], "case": "count"},
+  {"question": "כמה קבלות שמורות אצלנו?", "numbers": [15], "words": [], "forbidden": [], "case": "count"},
+  {"question": "כמה עולה כל תשלום על המקרר?", "numbers": [415], "words": [], "forbidden": [], "case": "installments"},
+  {"question": "מה ההפרש בין מה שנגבה באיקאה לבין הקבלה?", "numbers": [25], "words": [], "forbidden": [], "case": "amount mismatch"}
+]

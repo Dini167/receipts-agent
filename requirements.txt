@@ -1,6 +1,7 @@
 langgraph
 langchain
 langsmith
+langchain-anthropic
 langchain-google-genai
 langchain-groq
 langchain-openai

@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+# real personal data never goes to GitHub
+data/private/
+receipts.db
+.streamlit/secrets.toml
